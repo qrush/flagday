@@ -37,22 +37,43 @@ COMMUNITY_SVG = """<svg viewBox="0 0 50 35" fill="none" xmlns="http://www.w3.org
 </defs> 
 </svg>"""
 
+# Utility to get SVG with correct color
+FLAG_COLORS = {
+    "G": "green",
+    "Y": "yellow",
+    "R": "red",
+}
+
+def get_flag_svg(flag_color):
+    color = FLAG_COLORS.get(flag_color, "green")
+    return FLAG_SVG.replace('fill="green"', 'fill="%s"' % color)
+
 def main(config):
     # Get Community Boating flag status
     response = http.get("https://api.community-boating.org/api/flag")
+    flag_color = "G"  # Default to green
     if response.status_code == 200:
         response_text = str(response.body())
-        print("lol?")
+        # response_text = "var FLAG_COLOR = \"B\""
         print(response_text)
         if response_text.find("FLAG_COLOR = \"C\"") >= 0:
             is_closed = True
             flag_svg = COMMUNITY_SVG
         else:
             is_closed = False
-            flag_svg = FLAG_SVG
+            # Extract flag color from response
+            idx = response_text.find("FLAG_COLOR = ")
+            if idx >= 0:
+                flag_color = response_text[idx+14]
+            if flag_color in FLAG_COLORS:
+                flag_svg = get_flag_svg(flag_color)
+                is_closed = False
+            else:
+                flag_svg = COMMUNITY_SVG
+                is_closed = True
     else:
-        is_closed = False
-        flag_svg = FLAG_SVG
+        is_closed = True
+        flag_svg = COMMUNITY_SVG
 
     # Stub wind data
     wind_speed = "4"
