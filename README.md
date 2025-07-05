@@ -11,8 +11,8 @@ This Pixlet app displays the current flag status and wind conditions for Communi
 1. Install [Pixlet](https://github.com/tidbyt/pixlet#installation)
 2. Clone this repo:
    ```sh
-   git clone https://github.com/qrush/babby-progress.git
-   cd babby-progress
+   git clone https://github.com/qrush/flagday.git
+   cd flagday
    ```
 3. Run the app locally:
    ```sh
