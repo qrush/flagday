@@ -1,0 +1,8 @@
+---
+id: flag-day
+name: Flag Day
+summary: Keep track of Community Boating's flag system
+desc: Keep track of Community Boating's flag system
+author: qrush
+fileName: flagday.star
+packageName: flagday
