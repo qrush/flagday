@@ -48,7 +48,7 @@ def get_flag_svg(flag_color):
     color = FLAG_COLORS.get(flag_color, "green")
     return FLAG_SVG.replace('fill="green"', 'fill="%s"' % color)
 
-def fetch_wind_speed():
+def fetch_latest_metric(metric_name, data_channel):
     url = "https://www.licor.cloud/api/dashboard/public/query"
     headers = {"content-type": "application/json"}
     body = json.encode({
@@ -60,10 +60,10 @@ def fetch_wind_speed():
                     "name": "last",
                     "align_start_time": False,
                 }],
-                "name": "com.onset.sensordata.windspeed_us",
+                "name": metric_name,
                 "exclude_tags": True,
                 "group_by": [],
-                "tags": {"dataChannel": ["4f93ba96-a978-45c0-97f5-00b6e96aee91"]}
+                "tags": {"dataChannel": [data_channel]}
             }],
             "start_relative": {"value": 1, "unit": "hours"}
         }
@@ -71,7 +71,6 @@ def fetch_wind_speed():
     resp = http.post(url, headers=headers, body=body)
     if resp.status_code == 200:
         data = resp.json()
-        print(data)
         queries = data.get("queries", [])
         if len(queries) > 0:
             results = queries[0].get("results", [])
@@ -109,8 +108,8 @@ def main(config):
         flag_svg = COMMUNITY_SVG
 
     # Stub wind data
-    wind_speed = fetch_wind_speed()
-    gust_speed = "8"
+    wind_speed = fetch_latest_metric("com.onset.sensordata.windspeed_us", "4f93ba96-a978-45c0-97f5-00b6e96aee91")
+    gust_speed = fetch_latest_metric("com.onset.sensordata.gustspeed_us", "4e599481-ad7d-4693-955f-7476e4db291c")
 
     return render.Root(
         render.Row(
