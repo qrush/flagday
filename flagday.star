@@ -12,8 +12,8 @@ load("math.star", "math")
 load("render.star", "render")
 load("schema.star", "schema")
 load("time.star", "time")
+load("encoding/json.star", "json")
 
-DEFAULT_COLOR = "#BF40BF"
 FONT = "CG-pixel-3x5-mono"
 
 FLAG_SVG = """<svg viewBox="0 0 50 35" fill="none" xmlns="http://www.w3.org/2000/svg" style="background-color: white;"> 
@@ -48,6 +48,39 @@ def get_flag_svg(flag_color):
     color = FLAG_COLORS.get(flag_color, "green")
     return FLAG_SVG.replace('fill="green"', 'fill="%s"' % color)
 
+def fetch_wind_speed():
+    url = "https://www.licor.cloud/api/dashboard/public/query"
+    headers = {"content-type": "application/json"}
+    body = json.encode({
+        "id": "3896cb9d-a557-4a61-8887-3a3b0c9b2147",
+        "query": {
+            "limit": 1,
+            "metrics": [{
+                "aggregators": [{
+                    "name": "last",
+                    "align_start_time": False,
+                }],
+                "name": "com.onset.sensordata.windspeed_us",
+                "exclude_tags": True,
+                "group_by": [],
+                "tags": {"dataChannel": ["4f93ba96-a978-45c0-97f5-00b6e96aee91"]}
+            }],
+            "start_relative": {"value": 1, "unit": "hours"}
+        }
+    })
+    resp = http.post(url, headers=headers, body=body)
+    if resp.status_code == 200:
+        data = resp.json()
+        print(data)
+        queries = data.get("queries", [])
+        if len(queries) > 0:
+            results = queries[0].get("results", [])
+            if len(results) > 0:
+                values = results[0].get("values", [])
+                if len(values) > 0:
+                    return str(int(math.round(values[-1][1])))
+    return "?"
+
 def main(config):
     # Get Community Boating flag status
     response = http.get("https://api.community-boating.org/api/flag")
@@ -76,7 +109,7 @@ def main(config):
         flag_svg = COMMUNITY_SVG
 
     # Stub wind data
-    wind_speed = "4"
+    wind_speed = fetch_wind_speed()
     gust_speed = "8"
 
     return render.Root(
